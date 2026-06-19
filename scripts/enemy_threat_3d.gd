@@ -21,12 +21,13 @@ var _right_claw: MeshInstance3D
 var _tail: MeshInstance3D
 var _left_eye: MeshInstance3D
 var _right_eye: MeshInstance3D
-var _art_sprite: Sprite3D
 var _walk_time := 0.0
 var _spin_time := 0.0
 var _attack_pulse := 0.0
 var _hit_pulse := 0.0
 var _is_dying := false
+var _base_positions := {}
+var _base_rotations := {}
 
 
 func _ready() -> void:
@@ -95,11 +96,9 @@ func _animate_threat(delta: float, move_amount: float) -> void:
 	var hit: float = _hit_pulse
 
 	if threat_type == "drone":
-		_model_root.position.y = 0.08 + sin(_walk_time * 2.0) * 0.08 + attack * 0.12
-		_model_root.rotation_degrees = Vector3(attack * -10.0, 0.0, step * 6.0 * move_amount)
-		if is_instance_valid(_art_sprite):
-			_art_sprite.position = Vector3(0.0, 1.05 + sin(_walk_time * 2.0) * 0.09 + attack * 0.14, 0.0)
-			_art_sprite.rotation_degrees.z = step * 5.0 * move_amount
+		var hover := sin(_walk_time * 2.0)
+		_model_root.position.y = 0.08 + hover * 0.08 + attack * 0.12
+		_model_root.rotation_degrees = Vector3(attack * -12.0 - move_amount * 4.0, 0.0, step * 7.0 * move_amount)
 		_spin_blade(_left_rotor_a)
 		_spin_blade(_left_rotor_b)
 		_spin_blade(_right_rotor_a)
@@ -108,16 +107,13 @@ func _animate_threat(delta: float, move_amount: float) -> void:
 			_sensor_face.scale = Vector3(1.0 + attack * 0.35 + hit * 0.25, 1.0 + attack * 0.2, 1.0)
 	else:
 		_model_root.position.y = bob * 0.05
-		_model_root.rotation_degrees = Vector3(attack * -8.0, 0.0, step * 4.0 * move_amount)
-		if is_instance_valid(_art_sprite):
-			_art_sprite.position = Vector3(0.0, 0.72 + bob * 0.05, 0.0)
-			_art_sprite.rotation_degrees.z = step * 4.0 * move_amount - attack * 5.0
+		_model_root.rotation_degrees = Vector3(attack * -10.0 - move_amount * 2.5, 0.0, step * 5.0 * move_amount)
 		if is_instance_valid(_left_claw):
-			_left_claw.rotation_degrees = Vector3(72.0 - attack * 28.0, 0.0, -18.0 + step * 16.0 * move_amount)
+			_pose(_left_claw, Vector3(-attack * 34.0, 0.0, step * 18.0 * move_amount - attack * 8.0))
 		if is_instance_valid(_right_claw):
-			_right_claw.rotation_degrees = Vector3(72.0 - attack * 28.0, 0.0, 18.0 - step * 16.0 * move_amount)
+			_pose(_right_claw, Vector3(-attack * 34.0, 0.0, -step * 18.0 * move_amount + attack * 8.0))
 		if is_instance_valid(_tail):
-			_tail.rotation_degrees = Vector3(90.0, step * 10.0 * move_amount, 0.0)
+			_pose(_tail, Vector3(0.0, step * 12.0 * move_amount, 0.0))
 		if is_instance_valid(_left_eye):
 			_left_eye.scale = Vector3.ONE * (1.0 + attack * 0.45 + hit * 0.25)
 		if is_instance_valid(_right_eye):
@@ -126,13 +122,11 @@ func _animate_threat(delta: float, move_amount: float) -> void:
 	if is_instance_valid(_body_material):
 		var base_color: Color = Color(0.8, 0.12, 0.1) if threat_type == "alien" else Color(0.8, 0.12, 0.1)
 		_body_material.albedo_color = base_color.lerp(Color(1.0, 0.85, 0.3), hit)
-	if is_instance_valid(_art_sprite):
-		_art_sprite.modulate = Color.WHITE.lerp(Color(1.0, 0.82, 0.32), hit)
 
 
 func _spin_blade(blade: MeshInstance3D) -> void:
 	if is_instance_valid(blade):
-		blade.rotation_degrees.y = _spin_time
+		_pose(blade, Vector3(0.0, _spin_time, 0.0))
 
 
 func _play_death_animation() -> void:
@@ -147,9 +141,6 @@ func _play_death_animation() -> void:
 	tween.tween_property(_model_root, "scale", Vector3.ZERO, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_property(_model_root, "rotation_degrees", Vector3(0.0, 540.0, 0.0), 0.22)
 	tween.tween_property(_model_root, "position:y", 0.45, 0.22)
-	if is_instance_valid(_art_sprite):
-		tween.tween_property(_art_sprite, "scale", Vector3.ZERO, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-		tween.tween_property(_art_sprite, "rotation_degrees", Vector3(0.0, 0.0, 360.0), 0.22)
 	tween.set_parallel(false)
 	tween.tween_callback(queue_free)
 
@@ -173,6 +164,17 @@ func _build_visual() -> void:
 	_model_root = Node3D.new()
 	_model_root.name = "ThreatModel"
 	add_child(_model_root)
+
+	if _load_model_scene("res://art/models/drone_threat.glb" if threat_type == "drone" else "res://art/models/alien_threat.glb"):
+		if threat_type == "drone":
+			speed = 3.8
+			max_hp = 2
+		else:
+			speed = 2.8
+			max_hp = 3
+			hp = max_hp
+		_cache_animation_parts()
+		return
 
 	if threat_type == "drone":
 		speed = 3.8
@@ -209,34 +211,55 @@ func _build_visual() -> void:
 		_add_capsule("LeftHindLeg", Vector3(-0.28, 0.13, 0.18), 0.07, 0.4, dark, Vector3(18.0, 0.0, -12.0))
 		_add_capsule("RightHindLeg", Vector3(0.28, 0.13, 0.18), 0.07, 0.4, dark, Vector3(18.0, 0.0, 12.0))
 		_add_capsule("TailStub", Vector3(0.0, 0.3, 0.48), 0.08, 0.52, dark, Vector3(90.0, 0.0, 0.0))
-
 	_cache_animation_parts()
-	_add_art_sprite()
 
 
 func _cache_animation_parts() -> void:
-	_sensor_face = _model_root.get_node_or_null("DroneSensorFace") as MeshInstance3D
-	_left_rotor_a = _model_root.get_node_or_null("LeftRotorBladeA") as MeshInstance3D
-	_left_rotor_b = _model_root.get_node_or_null("LeftRotorBladeB") as MeshInstance3D
-	_right_rotor_a = _model_root.get_node_or_null("RightRotorBladeA") as MeshInstance3D
-	_right_rotor_b = _model_root.get_node_or_null("RightRotorBladeB") as MeshInstance3D
-	_left_claw = _model_root.get_node_or_null("LeftClawUpper") as MeshInstance3D
-	_right_claw = _model_root.get_node_or_null("RightClawUpper") as MeshInstance3D
-	_tail = _model_root.get_node_or_null("TailStub") as MeshInstance3D
-	_left_eye = _model_root.get_node_or_null("LeftAlienEye") as MeshInstance3D
-	_right_eye = _model_root.get_node_or_null("RightAlienEye") as MeshInstance3D
+	_sensor_face = _find_mesh("DroneSensorFace")
+	_left_rotor_a = _find_mesh("LeftRotorBladeA")
+	_left_rotor_b = _find_mesh("LeftRotorBladeB")
+	_right_rotor_a = _find_mesh("RightRotorBladeA")
+	_right_rotor_b = _find_mesh("RightRotorBladeB")
+	_left_claw = _find_mesh("LeftClawUpper")
+	_right_claw = _find_mesh("RightClawUpper")
+	_tail = _find_mesh("TailStub")
+	_left_eye = _find_mesh("LeftAlienEye")
+	_right_eye = _find_mesh("RightAlienEye")
+	for part in [_sensor_face, _left_rotor_a, _left_rotor_b, _right_rotor_a, _right_rotor_b, _left_claw, _right_claw, _tail, _left_eye, _right_eye]:
+		_remember_base(part)
 
 
-func _add_art_sprite() -> void:
-	_art_sprite = Sprite3D.new()
-	_art_sprite.name = "ThreatArtSprite"
-	_art_sprite.texture = load("res://art/game_assets/drone_sprite.png" if threat_type == "drone" else "res://art/game_assets/alien_sprite.png")
-	_art_sprite.pixel_size = 0.00135 if threat_type == "drone" else 0.0017
-	_art_sprite.position = Vector3(0.0, 1.05 if threat_type == "drone" else 0.72, 0.0)
-	_art_sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_art_sprite.shaded = true
-	add_child(_art_sprite)
-	_model_root.visible = false
+func _remember_base(mesh: MeshInstance3D) -> void:
+	if not is_instance_valid(mesh):
+		return
+	_base_positions[mesh.name] = mesh.position
+	_base_rotations[mesh.name] = mesh.rotation_degrees
+
+
+func _pose(mesh: MeshInstance3D, rotation_offset: Vector3, position_offset: Vector3 = Vector3.ZERO) -> void:
+	if not is_instance_valid(mesh):
+		return
+	var base_position: Vector3 = _base_positions.get(mesh.name, mesh.position)
+	var base_rotation: Vector3 = _base_rotations.get(mesh.name, mesh.rotation_degrees)
+	mesh.position = base_position + position_offset
+	mesh.rotation_degrees = base_rotation + rotation_offset
+
+
+func _load_model_scene(path: String) -> bool:
+	var packed := load(path)
+	if not packed is PackedScene:
+		return false
+
+	var instance := (packed as PackedScene).instantiate()
+	instance.name = "ThreatArtModel"
+	_model_root.add_child(instance)
+	return true
+
+
+func _find_mesh(node_name: String) -> MeshInstance3D:
+	if not is_instance_valid(_model_root):
+		return null
+	return _model_root.find_child(node_name, true, false) as MeshInstance3D
 
 
 func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
