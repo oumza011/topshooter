@@ -24,6 +24,11 @@ MATERIALS = {
 	"robot_trim": PBRMaterial(name="cream_highlight_trim", baseColorFactor=rgba(0.96, 0.94, 0.86), metallicFactor=0.04, roughnessFactor=0.5),
 	"robot_amber": PBRMaterial(name="amber_status_lights", baseColorFactor=rgba(1.0, 0.48, 0.12), emissiveFactor=[1.0, 0.32, 0.06], metallicFactor=0.0, roughnessFactor=0.35),
 	"robot_cyan": PBRMaterial(name="cyan_ai_core_and_visor", baseColorFactor=rgba(0.08, 0.76, 1.0), emissiveFactor=[0.0, 0.72, 1.0], metallicFactor=0.0, roughnessFactor=0.24),
+	"robot_worn_ivory": PBRMaterial(name="worn_ivory_showcase_armor", baseColorFactor=rgba(0.78, 0.72, 0.60), metallicFactor=0.16, roughnessFactor=0.66),
+	"robot_warm_black": PBRMaterial(name="warm_black_showcase_joints", baseColorFactor=rgba(0.035, 0.032, 0.028), metallicFactor=0.28, roughnessFactor=0.62),
+	"robot_showcase_amber": PBRMaterial(name="amber_showcase_lights", baseColorFactor=rgba(1.0, 0.56, 0.13), emissiveFactor=[1.0, 0.42, 0.08], metallicFactor=0.0, roughnessFactor=0.22),
+	"robot_panel_line": PBRMaterial(name="thin_brown_panel_lines", baseColorFactor=rgba(0.28, 0.19, 0.12), metallicFactor=0.0, roughnessFactor=0.9),
+	"robot_deep_gap": PBRMaterial(name="deep_recessed_panel_gaps", baseColorFactor=rgba(0.015, 0.014, 0.012), metallicFactor=0.0, roughnessFactor=0.95),
 	"mila_jacket": PBRMaterial(name="mila_oversized_warm_jacket", baseColorFactor=rgba(0.88, 0.80, 0.58), metallicFactor=0.0, roughnessFactor=0.88),
 	"mila_shadow": PBRMaterial(name="hoodie_shadow_corduroy", baseColorFactor=rgba(0.52, 0.42, 0.30), metallicFactor=0.0, roughnessFactor=0.92),
 	"mila_skin": PBRMaterial(name="mila_skin_warm", baseColorFactor=rgba(0.86, 0.63, 0.48), metallicFactor=0.0, roughnessFactor=0.76),
@@ -179,6 +184,138 @@ def build_robot() -> None:
 	export(s, "robot_ai.glb")
 
 
+def build_robot_showcase() -> None:
+	s = trimesh.Scene()
+	ivory = MATERIALS["robot_worn_ivory"]
+	dark = MATERIALS["robot_warm_black"]
+	line = MATERIALS["robot_panel_line"]
+	gap = MATERIALS["robot_deep_gap"]
+	amber = MATERIALS["robot_showcase_amber"]
+	trim = MATERIALS["robot_trim"]
+	shadow = MATERIALS["robot_shadow"]
+
+	# Feet and legs: broad, toy-like proportions with layered armor plates.
+	for side, sign in [("Left", -1.0), ("Right", 1.0)]:
+		capsule(s, f"{side}FootBase", (sign * 0.32, 0.09, -0.14), 0.13, 0.62, dark, axis="z")
+		ellipsoid(s, f"{side}FootIvoryToe", (sign * 0.32, 0.15, -0.35), (0.34, 0.16, 0.30), ivory)
+		ellipsoid(s, f"{side}FootTopLayerPlate", (sign * 0.32, 0.27, -0.36), (0.26, 0.055, 0.22), ivory)
+		capsule(s, f"{side}FootToePanelLine", (sign * 0.32, 0.30, -0.52), 0.010, 0.22, line, axis="x")
+		capsule(s, f"{side}FootSoleDarkLayer", (sign * 0.32, 0.05, -0.22), 0.055, 0.62, gap, axis="z")
+		capsule(s, f"{side}AnkleBlackPistonA", (sign * 0.22, 0.32, -0.02), 0.035, 0.36, dark, rot=(0, 0, -7 * sign))
+		capsule(s, f"{side}AnkleBlackPistonB", (sign * 0.43, 0.32, -0.02), 0.035, 0.34, dark, rot=(0, 0, 7 * sign))
+		cylinder(s, f"{side}AnkleSideDiscOuter", (sign * 0.52, 0.35, -0.05), 0.12, 0.055, dark, axis="x")
+		cylinder(s, f"{side}AnkleSideDiscAmber", (sign * 0.555, 0.35, -0.05), 0.062, 0.025, amber, axis="x")
+		ellipsoid(s, f"{side}ShinArmorLower", (sign * 0.32, 0.64, -0.02), (0.30, 0.46, 0.25), ivory)
+		ellipsoid(s, f"{side}ShinArmorUpper", (sign * 0.31, 1.02, -0.02), (0.34, 0.48, 0.27), ivory)
+		ellipsoid(s, f"{side}ShinRaisedFrontPlate", (sign * 0.31, 0.92, -0.22), (0.22, 0.32, 0.055), ivory)
+		capsule(s, f"{side}ShinPanelLineA", (sign * 0.32, 0.86, -0.16), 0.014, 0.45, line, rot=(0, 0, -3 * sign))
+		capsule(s, f"{side}ShinPanelLineB", (sign * 0.42, 0.76, -0.14), 0.010, 0.28, line, rot=(0, 0, 18 * sign))
+		cylinder(s, f"{side}KneeBlackRing", (sign * 0.31, 1.33, -0.10), 0.18, 0.09, dark, axis="x")
+		cylinder(s, f"{side}KneeIvoryCap", (sign * 0.35, 1.33, -0.11), 0.12, 0.04, ivory, axis="x")
+		cylinder(s, f"{side}KneeAmberDot", (sign * 0.385, 1.33, -0.11), 0.045, 0.025, amber, axis="x")
+		ellipsoid(s, f"{side}ThighOuterArmor", (sign * 0.35, 1.65, -0.02), (0.44, 0.58, 0.34), ivory)
+		ellipsoid(s, f"{side}ThighInnerBlackGap", (sign * 0.18, 1.66, -0.03), (0.18, 0.48, 0.26), dark)
+		ellipsoid(s, f"{side}ThighRaisedKitePlate", (sign * 0.38, 1.72, -0.28), (0.22, 0.34, 0.06), ivory, rot=(0, 0, 8 * sign))
+		capsule(s, f"{side}ThighPanelLine", (sign * 0.36, 1.70, -0.23), 0.014, 0.42, line, rot=(0, 0, 10 * sign))
+		cylinder(s, f"{side}HipBlackRing", (sign * 0.36, 2.02, -0.02), 0.20, 0.12, dark, axis="x")
+		cylinder(s, f"{side}HipIvoryCap", (sign * 0.43, 2.02, -0.02), 0.13, 0.05, ivory, axis="x")
+
+	# Pelvis and abdomen.
+	ellipsoid(s, "PelvisIvoryCup", (0.0, 2.05, -0.01), (0.76, 0.34, 0.40), ivory)
+	capsule(s, "PelvisLowerDarkSeal", (0.0, 1.88, -0.03), 0.055, 0.58, dark, axis="x")
+	for i, y in enumerate([2.22, 2.37, 2.52, 2.67]):
+		ellipsoid(s, f"AbdomenDarkRib{i}", (0.0, y, -0.10), (0.58 - i * 0.045, 0.13, 0.20), dark)
+		capsule(s, f"AbdomenIvorySeparator{i}", (0.0, y + 0.065, -0.18), 0.018, 0.42 - i * 0.035, line, axis="x")
+
+	# Chest armor with heart core, matching the reference's friendly focal point.
+	ellipsoid(s, "UpperChestIvoryShell", (0.0, 3.00, -0.03), (1.20, 0.72, 0.58), ivory)
+	ellipsoid(s, "LeftChestRaisedPlate", (-0.42, 3.08, -0.32), (0.42, 0.44, 0.13), ivory, rot=(0, 0, -8))
+	ellipsoid(s, "RightChestRaisedPlate", (0.42, 3.08, -0.32), (0.42, 0.44, 0.13), ivory, rot=(0, 0, 8))
+	ellipsoid(s, "LeftUpperChestSmallInset", (-0.20, 3.34, -0.38), (0.20, 0.08, 0.035), gap, rot=(0, 0, 8))
+	ellipsoid(s, "RightUpperChestSmallButton", (0.34, 3.30, -0.39), (0.12, 0.10, 0.035), shadow)
+	cylinder(s, "RightUpperChestAmberDot", (0.34, 3.30, -0.42), 0.034, 0.018, amber, axis="z")
+	ellipsoid(s, "ChestDarkInsetPlate", (0.0, 2.98, -0.39), (0.48, 0.44, 0.08), dark)
+	torus(s, "HeartCoreOctoRing", (0.0, 2.98, -0.455), 0.205, 0.025, shadow)
+	ellipsoid(s, "HeartCoreAmberTopLeft", (-0.055, 3.03, -0.49), (0.11, 0.12, 0.025), amber)
+	ellipsoid(s, "HeartCoreAmberTopRight", (0.055, 3.03, -0.49), (0.11, 0.12, 0.025), amber)
+	cone(s, "HeartCoreAmberPoint", (0.0, 2.91, -0.49), 0.13, 0.16, amber, axis="y", rot=(180, 0, 45), sections=4)
+	capsule(s, "ChestTopPanelLine", (0.0, 3.38, -0.33), 0.018, 0.72, line, axis="x")
+	capsule(s, "LeftChestPanelLine", (-0.48, 3.02, -0.40), 0.014, 0.34, line, rot=(0, 0, -26))
+	capsule(s, "RightChestPanelLine", (0.48, 3.02, -0.40), 0.014, 0.34, line, rot=(0, 0, 26))
+	cylinder(s, "TinyAmberChestLightLeft", (-0.62, 2.88, -0.39), 0.035, 0.025, amber, axis="z")
+	cylinder(s, "TinyAmberChestLightRight", (0.62, 2.88, -0.39), 0.035, 0.025, amber, axis="z")
+
+	# Backpack and neck.
+	capsule(s, "NeckBlackStackA", (0.0, 3.46, -0.02), 0.18, 0.20, dark)
+	capsule(s, "NeckBlackStackB", (0.0, 3.58, -0.02), 0.16, 0.18, dark)
+	ellipsoid(s, "BackpackRoundedMain", (0.0, 3.02, 0.48), (0.58, 0.92, 0.30), shadow)
+	capsule(s, "BackpackTopHandle", (0.0, 3.72, 0.56), 0.055, 0.58, dark, axis="x")
+	capsule(s, "BackpackRightLightSlot", (0.40, 3.12, 0.28), 0.030, 0.42, amber)
+	cylinder(s, "BackpackAntennaStem", (0.54, 4.33, 0.30), 0.025, 0.58, dark)
+	sphere(s, "BackpackAntennaTip", (0.54, 4.66, 0.30), 0.052, amber)
+
+	# Head: large rounded helmet, black visor, amber face.
+	ellipsoid(s, "HelmetLargeIvoryDome", (0.0, 4.02, -0.02), (1.12, 0.82, 0.78), ivory)
+	ellipsoid(s, "HelmetLowerJawIvory", (0.0, 3.80, -0.08), (1.00, 0.40, 0.66), ivory)
+	ellipsoid(s, "HelmetLeftCheekRaisedArmor", (-0.48, 3.82, -0.35), (0.22, 0.20, 0.08), ivory, rot=(0, 0, -16))
+	ellipsoid(s, "HelmetRightCheekRaisedArmor", (0.48, 3.82, -0.35), (0.22, 0.20, 0.08), ivory, rot=(0, 0, 16))
+	ellipsoid(s, "VisorBlackGlass", (0.0, 4.02, -0.49), (0.88, 0.38, 0.08), dark)
+	capsule(s, "VisorAmberEyeLeft", (-0.27, 4.04, -0.545), 0.055, 0.24, amber)
+	capsule(s, "VisorAmberEyeRight", (0.27, 4.04, -0.545), 0.055, 0.24, amber)
+	capsule(s, "VisorAmberMouth", (0.0, 3.82, -0.555), 0.018, 0.18, amber, axis="x")
+	ellipsoid(s, "HelmetTopPanel", (0.0, 4.45, -0.04), (0.42, 0.12, 0.28), trim)
+	capsule(s, "HelmetTopPanelLineA", (-0.18, 4.48, -0.12), 0.010, 0.24, line, rot=(0, 0, -18))
+	capsule(s, "HelmetTopPanelLineB", (0.18, 4.48, -0.12), 0.010, 0.24, line, rot=(0, 0, 18))
+	capsule(s, "HelmetBrowPanelLine", (0.0, 4.25, -0.52), 0.014, 0.74, line, axis="x")
+	capsule(s, "HelmetLeftVerticalSeam", (-0.46, 4.23, -0.37), 0.010, 0.33, line, rot=(0, 0, -14))
+	capsule(s, "HelmetRightVerticalSeam", (0.46, 4.23, -0.37), 0.010, 0.33, line, rot=(0, 0, 14))
+	capsule(s, "HelmetLeftLowerSeam", (-0.38, 3.66, -0.42), 0.010, 0.28, line, rot=(0, 0, 26))
+	capsule(s, "HelmetRightLowerSeam", (0.38, 3.66, -0.42), 0.010, 0.28, line, rot=(0, 0, -26))
+	for i, x in enumerate([-0.32, -0.16, 0.16, 0.32]):
+		capsule(s, f"HelmetTinyBrowNotch{i}", (x, 4.305, -0.54), 0.007, 0.08, line, axis="y")
+	cylinder(s, "LeftEarDarkRing", (-0.62, 4.02, -0.02), 0.24, 0.12, dark, axis="x")
+	cylinder(s, "RightEarDarkRing", (0.62, 4.02, -0.02), 0.24, 0.12, dark, axis="x")
+	cylinder(s, "LeftEarIvoryCap", (-0.70, 4.02, -0.02), 0.18, 0.06, ivory, axis="x")
+	cylinder(s, "RightEarIvoryCap", (0.70, 4.02, -0.02), 0.18, 0.06, ivory, axis="x")
+	cylinder(s, "LeftEarAmberRing", (-0.735, 4.02, -0.02), 0.115, 0.025, amber, axis="x")
+	cylinder(s, "RightEarAmberRing", (0.735, 4.02, -0.02), 0.115, 0.025, amber, axis="x")
+
+	# Arms, hands, and detailed finger silhouette.
+	for side, sign in [("Left", -1.0), ("Right", 1.0)]:
+		cylinder(s, f"{side}ShoulderBlackRing", (sign * 0.86, 3.22, -0.02), 0.25, 0.16, dark, axis="x")
+		ellipsoid(s, f"{side}ShoulderIvoryArmor", (sign * 1.00, 3.20, -0.05), (0.40, 0.42, 0.36), ivory)
+		cylinder(s, f"{side}ShoulderAmberDisc", (sign * 1.17, 3.20, -0.10), 0.105, 0.035, amber, axis="x")
+		torus(s, f"{side}ShoulderAmberOuterRing", (sign * 1.18, 3.20, -0.10), 0.13, 0.012, line, rot=(0, 90, 0))
+		capsule(s, f"{side}ShoulderTopSeam", (sign * 1.00, 3.42, -0.14), 0.011, 0.25, line, axis="x")
+		capsule(s, f"{side}UpperArmDarkPistonA", (sign * 0.98, 2.83, -0.02), 0.052, 0.46, dark, rot=(0, 0, 4 * sign))
+		capsule(s, f"{side}UpperArmDarkPistonB", (sign * 1.12, 2.82, -0.02), 0.045, 0.40, dark, rot=(0, 0, -5 * sign))
+		ellipsoid(s, f"{side}ForearmIvoryMain", (sign * 1.02, 2.42, -0.05), (0.34, 0.62, 0.28), ivory, rot=(0, 0, 6 * sign))
+		ellipsoid(s, f"{side}ForearmRaisedOuterPanel", (sign * 1.12, 2.44, -0.20), (0.15, 0.42, 0.05), ivory, rot=(0, 0, 6 * sign))
+		capsule(s, f"{side}ForearmPanelLineA", (sign * 1.02, 2.42, -0.25), 0.012, 0.42, line, rot=(0, 0, 5 * sign))
+		capsule(s, f"{side}ForearmPanelLineB", (sign * 0.90, 2.48, -0.23), 0.010, 0.26, line, rot=(0, 0, -18 * sign))
+		cylinder(s, f"{side}ElbowBlackRing", (sign * 1.02, 2.77, -0.02), 0.16, 0.12, dark, axis="x")
+		cylinder(s, f"{side}WristBlackRing", (sign * 1.00, 2.06, -0.04), 0.13, 0.10, dark, axis="x")
+		ellipsoid(s, f"{side}PalmDarkBlock", (sign * 1.00, 1.88, -0.07), (0.22, 0.18, 0.16), dark)
+		for i, offset in enumerate([-0.12, -0.04, 0.04, 0.12]):
+			capsule(s, f"{side}Finger{i}", (sign * (0.95 + offset * sign), 1.67, -0.13), 0.025, 0.24, dark, rot=(12, 0, 5 * sign))
+			capsule(s, f"{side}Finger{i}Tip", (sign * (0.95 + offset * sign), 1.54, -0.15), 0.020, 0.12, dark, rot=(20, 0, 5 * sign))
+			cylinder(s, f"{side}Finger{i}Knuckle", (sign * (0.95 + offset * sign), 1.73, -0.12), 0.028, 0.018, line, axis="y")
+		capsule(s, f"{side}Thumb", (sign * 1.16, 1.80, -0.05), 0.030, 0.24, dark, rot=(42, 0, 32 * sign))
+		capsule(s, f"{side}ThumbTip", (sign * 1.23, 1.66, -0.12), 0.023, 0.13, dark, rot=(52, 0, 38 * sign))
+		cylinder(s, f"{side}ForearmTinyAmberSlot", (sign * 1.07, 2.48, -0.25), 0.030, 0.025, amber, axis="z")
+
+	# Small scratches and surface breaks sell the worn art reference without texture maps.
+	for i, (x, y, z, rot_z, length) in enumerate([
+		(-0.25, 4.30, -0.48, -18, 0.16), (0.36, 4.23, -0.50, 22, 0.14),
+		(-0.42, 3.18, -0.43, 30, 0.18), (0.34, 2.82, -0.46, -18, 0.16),
+		(-0.35, 1.66, -0.26, -12, 0.14), (0.32, 1.06, -0.22, 18, 0.16),
+		(-1.03, 2.45, -0.28, 10, 0.13), (1.04, 2.42, -0.28, -10, 0.13),
+	]):
+		capsule(s, f"PaintScratch{i}", (x, y, z), 0.006, length, line, axis="x", rot=(0, 0, rot_z))
+
+	export(s, "robot_showcase.glb")
+
+
 def build_mila() -> None:
 	s = trimesh.Scene()
 	jacket = MATERIALS["mila_jacket"]
@@ -321,6 +458,7 @@ def build_drone() -> None:
 
 def main() -> None:
 	build_robot()
+	build_robot_showcase()
 	build_mila()
 	build_alien()
 	build_drone()
