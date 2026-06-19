@@ -8,6 +8,19 @@ var hp := 5
 var target: Node3D
 var _hurt_flash := 0.0
 var _jacket_material: StandardMaterial3D
+var _model_root: Node3D
+var _head: MeshInstance3D
+var _left_sleeve: MeshInstance3D
+var _right_sleeve: MeshInstance3D
+var _left_boot: MeshInstance3D
+var _right_boot: MeshInstance3D
+var _backpack: MeshInstance3D
+var _flashlight: MeshInstance3D
+var _flashlight_beam: SpotLight3D
+var _walk_time := 0.0
+var _idle_time := 0.0
+var _collapse_time := 0.0
+var _celebrating := false
 
 
 func _ready() -> void:
@@ -21,8 +34,15 @@ func _physics_process(delta: float) -> void:
 	if is_instance_valid(_jacket_material):
 		_jacket_material.albedo_color = Color(1.0, 0.65, 0.55) if _hurt_flash > 0.0 else Color(0.86, 0.72, 0.45)
 
+	if hp <= 0:
+		velocity = Vector3.ZERO
+		_collapse_time += delta
+		_animate_child(delta, 0.0, 0.0)
+		return
+
 	if not is_instance_valid(target):
 		velocity = Vector3.ZERO
+		_animate_child(delta, 0.0, 0.0)
 		return
 
 	var to_target := target.global_position - global_position
@@ -36,6 +56,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = Vector3.ZERO
 
+	_animate_child(delta, velocity.length() / speed, distance)
+
 
 func hit(damage: int) -> void:
 	hp = max(hp - damage, 0)
@@ -45,7 +67,66 @@ func hit(damage: int) -> void:
 		get_tree().current_scene.on_actor_hit()
 
 	if hp <= 0 and get_tree().current_scene.has_method("fail_demo"):
+		_collapse_time = 0.01
 		get_tree().current_scene.fail_demo("Mila could not keep going.")
+
+
+func celebrate() -> void:
+	_celebrating = true
+
+
+func _animate_child(delta: float, move_amount: float, distance_to_robot: float) -> void:
+	if not is_instance_valid(_model_root):
+		return
+
+	_idle_time += delta
+	_walk_time += delta * (9.5 if move_amount > 0.05 else 2.0)
+
+	var step: float = sin(_walk_time)
+	var counter_step: float = sin(_walk_time + PI)
+	var bob: float = abs(sin(_walk_time)) * move_amount
+	var fear: float = clampf((distance_to_robot - follow_distance) / 4.0, 0.0, 1.0)
+	var hurt: float = _hurt_flash / 0.16
+
+	_model_root.position = Vector3(0.0, sin(_idle_time * 2.2) * 0.018 + bob * 0.045, 0.0)
+	_model_root.rotation_degrees = Vector3(hurt * 7.0, 0.0, step * 2.4 * move_amount + hurt * 8.0)
+
+	if is_instance_valid(_head):
+		_head.rotation_degrees = Vector3(-fear * 6.0 + sin(_idle_time * 2.6) * 1.2, sin(_idle_time * 1.4) * 3.5, -step * move_amount * 2.0)
+	if is_instance_valid(_left_sleeve):
+		_left_sleeve.rotation_degrees = Vector3(counter_step * 15.0 * move_amount, 0.0, 6.0 - fear * 8.0)
+	if is_instance_valid(_right_sleeve):
+		_right_sleeve.rotation_degrees = Vector3(step * 15.0 * move_amount, 0.0, -6.0 + fear * 8.0)
+	if is_instance_valid(_left_boot):
+		_left_boot.position.y = 0.08 + maxf(step, 0.0) * 0.035 * move_amount
+		_left_boot.rotation_degrees.x = -step * 7.0 * move_amount
+	if is_instance_valid(_right_boot):
+		_right_boot.position.y = 0.08 + maxf(counter_step, 0.0) * 0.035 * move_amount
+		_right_boot.rotation_degrees.x = -counter_step * 7.0 * move_amount
+	if is_instance_valid(_backpack):
+		_backpack.rotation_degrees = Vector3(step * 4.0 * move_amount, 0.0, -step * 3.0 * move_amount)
+	if is_instance_valid(_flashlight):
+		_flashlight.rotation_degrees = Vector3(step * 10.0 * move_amount + fear * 8.0, 0.0, -step * 4.0 * move_amount)
+	if is_instance_valid(_flashlight_beam):
+		_flashlight_beam.light_energy = 0.75 + abs(step) * 0.25 * move_amount + fear * 0.25
+
+	if _celebrating and hp > 0:
+		var hop: float = abs(sin(_idle_time * 8.0))
+		_model_root.position.y += hop * 0.06
+		_model_root.rotation_degrees.z = sin(_idle_time * 5.0) * 4.0
+		if is_instance_valid(_left_sleeve):
+			_left_sleeve.rotation_degrees = Vector3(-62.0 + hop * 12.0, 0.0, -18.0)
+		if is_instance_valid(_right_sleeve):
+			_right_sleeve.rotation_degrees = Vector3(-58.0 + hop * 12.0, 0.0, 18.0)
+		if is_instance_valid(_head):
+			_head.rotation_degrees.x = -8.0 + hop * 5.0
+
+	if hp <= 0:
+		var fall: float = minf(_collapse_time / 0.35, 1.0)
+		_model_root.rotation_degrees = Vector3(0.0, 0.0, lerpf(0.0, -82.0, fall))
+		_model_root.position.y = lerpf(_model_root.position.y, 0.04, fall)
+		if is_instance_valid(_flashlight_beam):
+			_flashlight_beam.light_energy = lerpf(_flashlight_beam.light_energy, 0.0, fall)
 
 
 func _build_child() -> void:
@@ -69,6 +150,10 @@ func _build_child() -> void:
 	collision.shape = capsule
 	collision.position = Vector3(0.0, 0.58, 0.0)
 	add_child(collision)
+
+	_model_root = Node3D.new()
+	_model_root.name = "ChildModel"
+	add_child(_model_root)
 
 	_add_box("OversizedJacketBody", Vector3(0.0, 0.72, 0.0), Vector3(0.56, 0.62, 0.38), _jacket_material)
 	_add_box("JacketLowerHem", Vector3(0.0, 0.43, -0.01), Vector3(0.62, 0.12, 0.42), hoodie_shadow)
@@ -112,6 +197,18 @@ func _build_child() -> void:
 	_add_box("FlashlightBody", Vector3(0.45, 0.75, -0.14), Vector3(0.11, 0.11, 0.34), strap_mat)
 	_add_cylinder("FlashlightLens", Vector3(0.45, 0.75, -0.34), 0.065, 0.045, light_mat, Vector3(90.0, 0.0, 0.0))
 	_add_flashlight_beam(Vector3(0.45, 0.75, -0.44))
+	_cache_animation_parts()
+
+
+func _cache_animation_parts() -> void:
+	_head = _model_root.get_node_or_null("Head") as MeshInstance3D
+	_left_sleeve = _model_root.get_node_or_null("LeftSleeve") as MeshInstance3D
+	_right_sleeve = _model_root.get_node_or_null("RightSleeve") as MeshInstance3D
+	_left_boot = _model_root.get_node_or_null("LeftBoot") as MeshInstance3D
+	_right_boot = _model_root.get_node_or_null("RightBoot") as MeshInstance3D
+	_backpack = _model_root.get_node_or_null("Backpack") as MeshInstance3D
+	_flashlight = _model_root.get_node_or_null("FlashlightBody") as MeshInstance3D
+	_flashlight_beam = _model_root.get_node_or_null("FlashlightBeam") as SpotLight3D
 
 
 func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
@@ -123,7 +220,7 @@ func _add_box(node_name: String, position: Vector3, size: Vector3, material: Mat
 	mesh.position = position
 	mesh.rotation_degrees = rotation
 	mesh.material_override = material
-	add_child(mesh)
+	_model_root.add_child(mesh)
 	return mesh
 
 
@@ -136,7 +233,7 @@ func _add_sphere(node_name: String, position: Vector3, radius: float, material: 
 	mesh.name = node_name
 	mesh.position = position
 	mesh.material_override = material
-	add_child(mesh)
+	_model_root.add_child(mesh)
 	return mesh
 
 
@@ -152,7 +249,7 @@ func _add_cylinder(node_name: String, position: Vector3, radius: float, height: 
 	mesh.position = position
 	mesh.rotation_degrees = rotation
 	mesh.material_override = material
-	add_child(mesh)
+	_model_root.add_child(mesh)
 	return mesh
 
 
@@ -164,7 +261,7 @@ func _add_flashlight_beam(position: Vector3) -> void:
 	light.light_energy = 0.9
 	light.spot_range = 5.5
 	light.spot_angle = 26.0
-	add_child(light)
+	_model_root.add_child(light)
 
 
 func _mat(albedo: Color, emission: Color = Color.BLACK, energy: float = 0.0) -> StandardMaterial3D:

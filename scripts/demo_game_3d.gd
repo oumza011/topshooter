@@ -535,6 +535,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _win_demo() -> void:
 	rescued = true
+	if is_instance_valid(player) and player.has_method("celebrate"):
+		player.celebrate()
+	if is_instance_valid(child) and child.has_method("celebrate"):
+		child.celebrate()
 	objective_label.text = "Rescue signal locked"
 	status_label.text = "Mila reached the beacon. Prototype complete. Press R to restart."
 

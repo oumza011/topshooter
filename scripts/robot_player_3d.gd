@@ -10,6 +10,26 @@ var hp := 8
 var _fire_cooldown := 0.0
 var _body_material: StandardMaterial3D
 var _core_material: StandardMaterial3D
+var _base_shell_color := Color(0.62, 0.68, 0.7)
+var _model_root: Node3D
+var _head_shell: MeshInstance3D
+var _upper_chest: MeshInstance3D
+var _left_forearm: MeshInstance3D
+var _right_forearm: MeshInstance3D
+var _right_blaster: MeshInstance3D
+var _muzzle_glow: MeshInstance3D
+var _left_thigh: MeshInstance3D
+var _right_thigh: MeshInstance3D
+var _left_foot: MeshInstance3D
+var _right_foot: MeshInstance3D
+var _antenna_tip: MeshInstance3D
+var _visor_glow: MeshInstance3D
+var _walk_time := 0.0
+var _idle_time := 0.0
+var _shoot_pulse := 0.0
+var _hit_pulse := 0.0
+var _death_time := 0.0
+var _celebrating := false
 
 
 func _ready() -> void:
@@ -20,6 +40,14 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_fire_cooldown = maxf(_fire_cooldown - delta, 0.0)
+	_shoot_pulse = maxf(_shoot_pulse - delta * 7.5, 0.0)
+	_hit_pulse = maxf(_hit_pulse - delta * 5.5, 0.0)
+
+	if hp <= 0:
+		velocity = Vector3.ZERO
+		_death_time += delta
+		_animate_robot(delta, 0.0)
+		return
 
 	var input := _movement_input()
 	velocity = input * speed
@@ -33,6 +61,8 @@ func _physics_process(delta: float) -> void:
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and _fire_cooldown <= 0.0:
 		_fire(aim_point)
 		_fire_cooldown = fire_rate
+
+	_animate_robot(delta, input.length())
 
 
 func _movement_input() -> Vector3:
@@ -74,15 +104,91 @@ func _fire(aim_point: Vector3) -> void:
 	bullet.direction = direction
 	bullet.position = global_position + direction * 0.95 + Vector3(0.0, 0.82, 0.0)
 	get_tree().current_scene.add_child(bullet)
+	_shoot_pulse = 1.0
 
 
 func hit(damage: int) -> void:
 	hp = max(hp - damage, 0)
+	_hit_pulse = 1.0
 	if get_tree().current_scene.has_method("on_actor_hit"):
 		get_tree().current_scene.on_actor_hit()
 
 	if hp <= 0 and get_tree().current_scene.has_method("fail_demo"):
+		_death_time = 0.01
 		get_tree().current_scene.fail_demo("The robot core shut down.")
+
+
+func celebrate() -> void:
+	_celebrating = true
+
+
+func _animate_robot(delta: float, move_amount: float) -> void:
+	if not is_instance_valid(_model_root):
+		return
+
+	_idle_time += delta
+	_walk_time += delta * (8.5 if move_amount > 0.05 else 2.2)
+
+	var step: float = sin(_walk_time)
+	var counter_step: float = sin(_walk_time + PI)
+	var bob: float = abs(sin(_walk_time)) if move_amount > 0.05 else 0.0
+	var idle_breath: float = sin(_idle_time * 2.0) * 0.025
+	var shoot: float = _shoot_pulse
+	var hit: float = _hit_pulse
+
+	_model_root.position = Vector3(0.0, idle_breath + bob * 0.07 - shoot * 0.035, 0.0)
+	_model_root.rotation_degrees = Vector3(-shoot * 5.5, 0.0, step * 2.5 * move_amount)
+
+	if is_instance_valid(_head_shell):
+		_head_shell.rotation_degrees = Vector3(sin(_idle_time * 1.5) * 1.5, sin(_idle_time * 0.9) * 4.0, -step * move_amount * 1.6)
+	if is_instance_valid(_upper_chest):
+		_upper_chest.rotation_degrees = Vector3(0.0, 0.0, -step * move_amount * 1.8)
+
+	if is_instance_valid(_left_forearm):
+		_left_forearm.rotation_degrees = Vector3(counter_step * 14.0 * move_amount, 0.0, -8.0 - shoot * 6.0)
+	if is_instance_valid(_right_forearm):
+		_right_forearm.rotation_degrees = Vector3(step * 8.0 * move_amount - shoot * 22.0, 0.0, 8.0 + shoot * 4.0)
+		_right_forearm.position.z = -0.03 - shoot * 0.08
+	if is_instance_valid(_right_blaster):
+		_right_blaster.position.z = -0.32 - shoot * 0.16
+	if is_instance_valid(_muzzle_glow):
+		_muzzle_glow.scale = Vector3.ONE * (1.0 + shoot * 2.2)
+		_muzzle_glow.visible = shoot > 0.02
+
+	if is_instance_valid(_left_thigh):
+		_left_thigh.rotation_degrees = Vector3(step * 18.0 * move_amount, 0.0, -3.0 * move_amount)
+	if is_instance_valid(_right_thigh):
+		_right_thigh.rotation_degrees = Vector3(counter_step * 18.0 * move_amount, 0.0, 3.0 * move_amount)
+	if is_instance_valid(_left_foot):
+		_left_foot.position.y = 0.06 + maxf(step, 0.0) * 0.05 * move_amount
+		_left_foot.rotation_degrees.x = -step * 8.0 * move_amount
+	if is_instance_valid(_right_foot):
+		_right_foot.position.y = 0.06 + maxf(counter_step, 0.0) * 0.05 * move_amount
+		_right_foot.rotation_degrees.x = -counter_step * 8.0 * move_amount
+
+	if is_instance_valid(_antenna_tip):
+		_antenna_tip.position.y = 2.2 + sin(_idle_time * 5.0) * 0.025
+	if is_instance_valid(_visor_glow):
+		var pulse_scale := 1.0 + sin(_idle_time * 4.0) * 0.08 + shoot * 0.25
+		_visor_glow.scale = Vector3(pulse_scale, pulse_scale, 1.0)
+
+	if is_instance_valid(_body_material):
+		_body_material.albedo_color = _base_shell_color.lerp(Color(1.0, 0.38, 0.28), hit)
+
+	if _celebrating and hp > 0:
+		var cheer: float = abs(sin(_idle_time * 7.5))
+		_model_root.position.y += cheer * 0.08
+		if is_instance_valid(_left_forearm):
+			_left_forearm.rotation_degrees = Vector3(-45.0 + cheer * 12.0, 0.0, -22.0)
+		if is_instance_valid(_right_forearm):
+			_right_forearm.rotation_degrees = Vector3(-42.0 + cheer * 10.0, 0.0, 22.0)
+		if is_instance_valid(_visor_glow):
+			_visor_glow.scale = Vector3(1.25 + cheer * 0.25, 1.18 + cheer * 0.22, 1.0)
+
+	if hp <= 0:
+		var fall: float = minf(_death_time / 0.45, 1.0)
+		_model_root.rotation_degrees = Vector3(0.0, 0.0, lerpf(0.0, 78.0, fall))
+		_model_root.position.y = lerpf(_model_root.position.y, 0.08, fall)
 
 
 func _build_robot() -> void:
@@ -104,6 +210,10 @@ func _build_robot() -> void:
 	collision.shape = capsule
 	collision.position = Vector3(0.0, 0.78, 0.0)
 	add_child(collision)
+
+	_model_root = Node3D.new()
+	_model_root.name = "RobotModel"
+	add_child(_model_root)
 
 	_add_box("PelvisFrame", Vector3(0.0, 0.62, 0.02), Vector3(0.82, 0.28, 0.48), armor)
 	_add_box("LowerTorsoArmor", Vector3(0.0, 0.86, 0.0), Vector3(0.74, 0.46, 0.5), shell)
@@ -163,6 +273,24 @@ func _build_robot() -> void:
 	_add_point_light("RobotCoreLight", Vector3(0.0, 1.25, -0.45), Color(0.15, 0.85, 1.0), 1.6, 2.8)
 	_add_point_light("RobotShoulderLightLeft", Vector3(-0.68, 1.42, -0.38), Color(1.0, 0.45, 0.1), 0.55, 1.8)
 	_add_point_light("RobotShoulderLightRight", Vector3(0.68, 1.42, -0.38), Color(1.0, 0.45, 0.1), 0.55, 1.8)
+	_cache_animation_parts()
+
+
+func _cache_animation_parts() -> void:
+	_head_shell = _model_root.get_node_or_null("HeadShell") as MeshInstance3D
+	_upper_chest = _model_root.get_node_or_null("UpperChestArmor") as MeshInstance3D
+	_left_forearm = _model_root.get_node_or_null("LeftForearmArmor") as MeshInstance3D
+	_right_forearm = _model_root.get_node_or_null("RightForearmArmor") as MeshInstance3D
+	_right_blaster = _model_root.get_node_or_null("RightBlasterBarrel") as MeshInstance3D
+	_muzzle_glow = _model_root.get_node_or_null("RightBlasterMuzzleGlow") as MeshInstance3D
+	_left_thigh = _model_root.get_node_or_null("LeftThighPlate") as MeshInstance3D
+	_right_thigh = _model_root.get_node_or_null("RightThighPlate") as MeshInstance3D
+	_left_foot = _model_root.get_node_or_null("LeftFoot") as MeshInstance3D
+	_right_foot = _model_root.get_node_or_null("RightFoot") as MeshInstance3D
+	_antenna_tip = _model_root.get_node_or_null("AntennaTip") as MeshInstance3D
+	_visor_glow = _model_root.get_node_or_null("VisorGlow") as MeshInstance3D
+	if is_instance_valid(_muzzle_glow):
+		_muzzle_glow.visible = false
 
 
 func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
@@ -174,7 +302,7 @@ func _add_box(node_name: String, position: Vector3, size: Vector3, material: Mat
 	mesh.position = position
 	mesh.rotation_degrees = rotation
 	mesh.material_override = material
-	add_child(mesh)
+	_model_root.add_child(mesh)
 	return mesh
 
 
@@ -187,7 +315,7 @@ func _add_sphere(node_name: String, position: Vector3, radius: float, material: 
 	mesh.name = node_name
 	mesh.position = position
 	mesh.material_override = material
-	add_child(mesh)
+	_model_root.add_child(mesh)
 	return mesh
 
 
@@ -203,7 +331,7 @@ func _add_cylinder(node_name: String, position: Vector3, radius: float, height: 
 	mesh.position = position
 	mesh.rotation_degrees = rotation
 	mesh.material_override = material
-	add_child(mesh)
+	_model_root.add_child(mesh)
 	return mesh
 
 
@@ -214,7 +342,7 @@ func _add_point_light(node_name: String, position: Vector3, color: Color, energy
 	light.light_color = color
 	light.light_energy = energy
 	light.omni_range = light_range
-	add_child(light)
+	_model_root.add_child(light)
 
 
 func _mat(albedo: Color, emission: Color = Color.BLACK, energy: float = 0.0) -> StandardMaterial3D:
