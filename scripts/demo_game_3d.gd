@@ -62,7 +62,7 @@ func _process(_delta: float) -> void:
 
 
 func _make_materials() -> void:
-	mat_floor = _mat(Color(0.11, 0.14, 0.16))
+	mat_floor = _texture_mat("res://art/game_assets/ship_floor_texture.png", Color(0.86, 0.86, 0.86))
 	mat_wall = _mat(Color(0.18, 0.22, 0.26))
 	mat_wall_dark = _mat(Color(0.07, 0.08, 0.1))
 	mat_light_blue = _mat(Color(0.16, 0.42, 0.78), Color(0.1, 0.55, 1.0), 1.4)
@@ -76,7 +76,7 @@ func _make_materials() -> void:
 	mat_glass = _mat(Color(0.08, 0.42, 0.55), Color(0.02, 0.42, 0.65), 0.5)
 	mat_screen = _mat(Color(0.04, 0.18, 0.28), Color(0.0, 0.55, 0.9), 1.8)
 	mat_medical = _mat(Color(0.85, 0.9, 0.86))
-	mat_alien_growth = _mat(Color(0.23, 0.05, 0.08), Color(0.65, 0.02, 0.08), 0.9)
+	mat_alien_growth = _texture_mat("res://art/game_assets/alien_nest_texture.png", Color(0.7, 0.35, 0.35), Color(0.65, 0.02, 0.08), 0.55)
 	mat_hazard = _mat(Color(0.95, 0.66, 0.12), Color(1.0, 0.42, 0.0), 0.75)
 
 
@@ -88,6 +88,12 @@ func _mat(albedo: Color, emission: Color = Color.BLACK, energy: float = 0.0) -> 
 		material.emission_enabled = true
 		material.emission = emission
 		material.emission_energy_multiplier = energy
+	return material
+
+
+func _texture_mat(texture_path: String, albedo: Color, emission: Color = Color.BLACK, energy: float = 0.0) -> StandardMaterial3D:
+	var material := _mat(albedo, emission, energy)
+	material.albedo_texture = load(texture_path)
 	return material
 
 

@@ -17,6 +17,7 @@ var _right_boot: MeshInstance3D
 var _backpack: MeshInstance3D
 var _flashlight: MeshInstance3D
 var _flashlight_beam: SpotLight3D
+var _art_sprite: Sprite3D
 var _walk_time := 0.0
 var _idle_time := 0.0
 var _collapse_time := 0.0
@@ -109,6 +110,10 @@ func _animate_child(delta: float, move_amount: float, distance_to_robot: float) 
 		_flashlight.rotation_degrees = Vector3(step * 10.0 * move_amount + fear * 8.0, 0.0, -step * 4.0 * move_amount)
 	if is_instance_valid(_flashlight_beam):
 		_flashlight_beam.light_energy = 0.75 + abs(step) * 0.25 * move_amount + fear * 0.25
+	if is_instance_valid(_art_sprite):
+		_art_sprite.position = Vector3(0.0, 1.02 + sin(_idle_time * 2.2) * 0.018 + bob * 0.06, 0.0)
+		_art_sprite.rotation_degrees = Vector3(0.0, 0.0, step * 2.8 * move_amount + hurt * 8.0)
+		_art_sprite.modulate = Color.WHITE.lerp(Color(1.0, 0.62, 0.52), hurt)
 
 	if _celebrating and hp > 0:
 		var hop: float = abs(sin(_idle_time * 8.0))
@@ -120,11 +125,17 @@ func _animate_child(delta: float, move_amount: float, distance_to_robot: float) 
 			_right_sleeve.rotation_degrees = Vector3(-58.0 + hop * 12.0, 0.0, 18.0)
 		if is_instance_valid(_head):
 			_head.rotation_degrees.x = -8.0 + hop * 5.0
+		if is_instance_valid(_art_sprite):
+			_art_sprite.position.y += hop * 0.08
+			_art_sprite.rotation_degrees.z = sin(_idle_time * 7.0) * 4.0
 
 	if hp <= 0:
 		var fall: float = minf(_collapse_time / 0.35, 1.0)
 		_model_root.rotation_degrees = Vector3(0.0, 0.0, lerpf(0.0, -82.0, fall))
 		_model_root.position.y = lerpf(_model_root.position.y, 0.04, fall)
+		if is_instance_valid(_art_sprite):
+			_art_sprite.rotation_degrees.z = lerpf(0.0, -82.0, fall)
+			_art_sprite.position.y = lerpf(_art_sprite.position.y, 0.45, fall)
 		if is_instance_valid(_flashlight_beam):
 			_flashlight_beam.light_energy = lerpf(_flashlight_beam.light_energy, 0.0, fall)
 
@@ -198,6 +209,7 @@ func _build_child() -> void:
 	_add_cylinder("FlashlightLens", Vector3(0.45, 0.75, -0.34), 0.065, 0.045, light_mat, Vector3(90.0, 0.0, 0.0))
 	_add_flashlight_beam(Vector3(0.45, 0.75, -0.44))
 	_cache_animation_parts()
+	_add_art_sprite()
 
 
 func _cache_animation_parts() -> void:
@@ -209,6 +221,18 @@ func _cache_animation_parts() -> void:
 	_backpack = _model_root.get_node_or_null("Backpack") as MeshInstance3D
 	_flashlight = _model_root.get_node_or_null("FlashlightBody") as MeshInstance3D
 	_flashlight_beam = _model_root.get_node_or_null("FlashlightBeam") as SpotLight3D
+
+
+func _add_art_sprite() -> void:
+	_art_sprite = Sprite3D.new()
+	_art_sprite.name = "MilaArtSprite"
+	_art_sprite.texture = load("res://art/game_assets/mila_sprite.png")
+	_art_sprite.pixel_size = 0.00145
+	_art_sprite.position = Vector3(0.0, 1.02, 0.0)
+	_art_sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_art_sprite.shaded = true
+	add_child(_art_sprite)
+	_model_root.visible = false
 
 
 func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:

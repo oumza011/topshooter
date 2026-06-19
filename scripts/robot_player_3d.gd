@@ -24,6 +24,7 @@ var _left_foot: MeshInstance3D
 var _right_foot: MeshInstance3D
 var _antenna_tip: MeshInstance3D
 var _visor_glow: MeshInstance3D
+var _art_sprite: Sprite3D
 var _walk_time := 0.0
 var _idle_time := 0.0
 var _shoot_pulse := 0.0
@@ -171,6 +172,10 @@ func _animate_robot(delta: float, move_amount: float) -> void:
 	if is_instance_valid(_visor_glow):
 		var pulse_scale := 1.0 + sin(_idle_time * 4.0) * 0.08 + shoot * 0.25
 		_visor_glow.scale = Vector3(pulse_scale, pulse_scale, 1.0)
+	if is_instance_valid(_art_sprite):
+		_art_sprite.position = Vector3(0.0, 1.32 + idle_breath + bob * 0.08 - shoot * 0.04, 0.0)
+		_art_sprite.rotation_degrees = Vector3(0.0, 0.0, step * 2.2 * move_amount - shoot * 2.0)
+		_art_sprite.modulate = Color.WHITE.lerp(Color(1.0, 0.45, 0.32), hit)
 
 	if is_instance_valid(_body_material):
 		_body_material.albedo_color = _base_shell_color.lerp(Color(1.0, 0.38, 0.28), hit)
@@ -184,11 +189,17 @@ func _animate_robot(delta: float, move_amount: float) -> void:
 			_right_forearm.rotation_degrees = Vector3(-42.0 + cheer * 10.0, 0.0, 22.0)
 		if is_instance_valid(_visor_glow):
 			_visor_glow.scale = Vector3(1.25 + cheer * 0.25, 1.18 + cheer * 0.22, 1.0)
+		if is_instance_valid(_art_sprite):
+			_art_sprite.position.y += cheer * 0.08
+			_art_sprite.rotation_degrees.z = sin(_idle_time * 8.0) * 3.0
 
 	if hp <= 0:
 		var fall: float = minf(_death_time / 0.45, 1.0)
 		_model_root.rotation_degrees = Vector3(0.0, 0.0, lerpf(0.0, 78.0, fall))
 		_model_root.position.y = lerpf(_model_root.position.y, 0.08, fall)
+		if is_instance_valid(_art_sprite):
+			_art_sprite.rotation_degrees.z = lerpf(0.0, 78.0, fall)
+			_art_sprite.position.y = lerpf(_art_sprite.position.y, 0.65, fall)
 
 
 func _build_robot() -> void:
@@ -274,6 +285,7 @@ func _build_robot() -> void:
 	_add_point_light("RobotShoulderLightLeft", Vector3(-0.68, 1.42, -0.38), Color(1.0, 0.45, 0.1), 0.55, 1.8)
 	_add_point_light("RobotShoulderLightRight", Vector3(0.68, 1.42, -0.38), Color(1.0, 0.45, 0.1), 0.55, 1.8)
 	_cache_animation_parts()
+	_add_art_sprite()
 
 
 func _cache_animation_parts() -> void:
@@ -291,6 +303,18 @@ func _cache_animation_parts() -> void:
 	_visor_glow = _model_root.get_node_or_null("VisorGlow") as MeshInstance3D
 	if is_instance_valid(_muzzle_glow):
 		_muzzle_glow.visible = false
+
+
+func _add_art_sprite() -> void:
+	_art_sprite = Sprite3D.new()
+	_art_sprite.name = "RobotArtSprite"
+	_art_sprite.texture = load("res://art/game_assets/robot_sprite.png")
+	_art_sprite.pixel_size = 0.00172
+	_art_sprite.position = Vector3(0.0, 1.32, 0.0)
+	_art_sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_art_sprite.shaded = true
+	add_child(_art_sprite)
+	_model_root.visible = false
 
 
 func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
