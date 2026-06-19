@@ -54,6 +54,9 @@ func hit(damage: int) -> void:
 func _build_visual() -> void:
 	_body_material = _mat(Color(0.8, 0.12, 0.1), Color(1.0, 0.05, 0.0), 0.6)
 	var dark := _mat(Color(0.1, 0.08, 0.09))
+	var acid := _mat(Color(0.38, 1.0, 0.18), Color(0.15, 1.0, 0.1), 1.8)
+	var steel := _mat(Color(0.35, 0.39, 0.42))
+	var warning := _mat(Color(1.0, 0.36, 0.08), Color(1.0, 0.18, 0.0), 1.5)
 
 	var collision := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
@@ -66,28 +69,51 @@ func _build_visual() -> void:
 	if threat_type == "drone":
 		speed = 3.8
 		max_hp = 2
-		_add_sphere("DroneBody", Vector3(0.0, 0.92, 0.0), 0.38, _body_material)
-		_add_box("DroneWingL", Vector3(-0.48, 0.92, 0.0), Vector3(0.42, 0.1, 0.18), dark)
-		_add_box("DroneWingR", Vector3(0.48, 0.92, 0.0), Vector3(0.42, 0.1, 0.18), dark)
+		_add_sphere("DroneCore", Vector3(0.0, 0.92, 0.0), 0.33, steel)
+		_add_box("DroneRedArmorTop", Vector3(0.0, 1.08, -0.03), Vector3(0.52, 0.13, 0.38), _body_material)
+		_add_box("DroneSensorFace", Vector3(0.0, 0.94, -0.34), Vector3(0.32, 0.12, 0.035), warning)
+		_add_box("DroneWingL", Vector3(-0.56, 0.94, 0.0), Vector3(0.58, 0.1, 0.2), dark)
+		_add_box("DroneWingR", Vector3(0.56, 0.94, 0.0), Vector3(0.58, 0.1, 0.2), dark)
+		_add_cylinder("LeftRotor", Vector3(-0.88, 0.98, 0.0), 0.24, 0.035, warning)
+		_add_cylinder("RightRotor", Vector3(0.88, 0.98, 0.0), 0.24, 0.035, warning)
+		_add_box("LeftRotorBladeA", Vector3(-0.88, 1.0, 0.0), Vector3(0.48, 0.025, 0.055), dark)
+		_add_box("LeftRotorBladeB", Vector3(-0.88, 1.0, 0.0), Vector3(0.055, 0.025, 0.48), dark)
+		_add_box("RightRotorBladeA", Vector3(0.88, 1.0, 0.0), Vector3(0.48, 0.025, 0.055), dark)
+		_add_box("RightRotorBladeB", Vector3(0.88, 1.0, 0.0), Vector3(0.055, 0.025, 0.48), dark)
+		_add_box("DroneStinger", Vector3(0.0, 0.75, -0.46), Vector3(0.12, 0.1, 0.36), dark)
 	else:
 		speed = 2.8
 		max_hp = 3
 		hp = max_hp
-		_add_sphere("AlienHead", Vector3(0.0, 0.88, -0.05), 0.32, _body_material)
-		_add_box("AlienBody", Vector3(0.0, 0.42, 0.0), Vector3(0.62, 0.55, 0.5), _body_material)
-		_add_box("LeftClaw", Vector3(-0.42, 0.5, -0.18), Vector3(0.18, 0.18, 0.45), dark)
-		_add_box("RightClaw", Vector3(0.42, 0.5, -0.18), Vector3(0.18, 0.18, 0.45), dark)
+		_add_sphere("AlienCranium", Vector3(0.0, 0.93, -0.08), 0.34, _body_material)
+		_add_box("AlienMaw", Vector3(0.0, 0.82, -0.38), Vector3(0.38, 0.16, 0.18), dark)
+		_add_sphere("LeftAlienEye", Vector3(-0.11, 0.98, -0.36), 0.045, acid)
+		_add_sphere("RightAlienEye", Vector3(0.11, 0.98, -0.36), 0.045, acid)
+		_add_box("AlienRibBody", Vector3(0.0, 0.45, 0.02), Vector3(0.62, 0.52, 0.48), _body_material)
+		_add_box("AlienBellyGlow", Vector3(0.0, 0.46, -0.26), Vector3(0.32, 0.28, 0.035), acid)
+		_add_box("SpinePlateA", Vector3(0.0, 0.68, 0.32), Vector3(0.22, 0.08, 0.16), dark)
+		_add_box("SpinePlateB", Vector3(0.0, 0.48, 0.34), Vector3(0.26, 0.08, 0.16), dark)
+		_add_box("SpinePlateC", Vector3(0.0, 0.28, 0.31), Vector3(0.18, 0.08, 0.14), dark)
+		_add_box("LeftClawUpper", Vector3(-0.42, 0.52, -0.18), Vector3(0.16, 0.16, 0.42), dark, Vector3(0.0, 0.0, -18.0))
+		_add_box("RightClawUpper", Vector3(0.42, 0.52, -0.18), Vector3(0.16, 0.16, 0.42), dark, Vector3(0.0, 0.0, 18.0))
+		_add_box("LeftClawTip", Vector3(-0.5, 0.44, -0.45), Vector3(0.12, 0.11, 0.24), acid, Vector3(-20.0, 0.0, -18.0))
+		_add_box("RightClawTip", Vector3(0.5, 0.44, -0.45), Vector3(0.12, 0.11, 0.24), acid, Vector3(-20.0, 0.0, 18.0))
+		_add_box("LeftHindLeg", Vector3(-0.28, 0.13, 0.18), Vector3(0.14, 0.26, 0.38), dark, Vector3(0.0, 0.0, -12.0))
+		_add_box("RightHindLeg", Vector3(0.28, 0.13, 0.18), Vector3(0.14, 0.26, 0.38), dark, Vector3(0.0, 0.0, 12.0))
+		_add_box("TailStub", Vector3(0.0, 0.3, 0.48), Vector3(0.18, 0.16, 0.46), dark)
 
 
-func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material) -> void:
+func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
 	var mesh := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = size
 	mesh.mesh = box
 	mesh.name = node_name
 	mesh.position = position
+	mesh.rotation_degrees = rotation
 	mesh.material_override = material
 	add_child(mesh)
+	return mesh
 
 
 func _add_sphere(node_name: String, position: Vector3, radius: float, material: Material) -> void:
@@ -102,6 +128,22 @@ func _add_sphere(node_name: String, position: Vector3, radius: float, material: 
 	add_child(mesh)
 
 
+func _add_cylinder(node_name: String, position: Vector3, radius: float, height: float, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var cylinder := CylinderMesh.new()
+	cylinder.top_radius = radius
+	cylinder.bottom_radius = radius
+	cylinder.height = height
+	cylinder.radial_segments = 18
+	mesh.mesh = cylinder
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.material_override = material
+	add_child(mesh)
+	return mesh
+
+
 func _mat(albedo: Color, emission: Color = Color.BLACK, energy: float = 0.0) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = albedo
@@ -111,4 +153,3 @@ func _mat(albedo: Color, emission: Color = Color.BLACK, energy: float = 0.0) -> 
 		material.emission = emission
 		material.emission_energy_multiplier = energy
 	return material
-
