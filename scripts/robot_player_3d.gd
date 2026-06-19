@@ -161,10 +161,10 @@ func _animate_robot(delta: float, move_amount: float) -> void:
 		_right_thigh.rotation_degrees = Vector3(counter_step * 18.0 * move_amount, 0.0, 3.0 * move_amount)
 	if is_instance_valid(_left_foot):
 		_left_foot.position.y = 0.06 + maxf(step, 0.0) * 0.05 * move_amount
-		_left_foot.rotation_degrees.x = -step * 8.0 * move_amount
+		_left_foot.rotation_degrees.x = 90.0 - step * 8.0 * move_amount
 	if is_instance_valid(_right_foot):
 		_right_foot.position.y = 0.06 + maxf(counter_step, 0.0) * 0.05 * move_amount
-		_right_foot.rotation_degrees.x = -counter_step * 8.0 * move_amount
+		_right_foot.rotation_degrees.x = 90.0 - counter_step * 8.0 * move_amount
 
 	if is_instance_valid(_antenna_tip):
 		_antenna_tip.position.y = 2.2 + sin(_idle_time * 5.0) * 0.025
@@ -215,9 +215,9 @@ func _build_robot() -> void:
 	_model_root.name = "RobotModel"
 	add_child(_model_root)
 
-	_add_box("PelvisFrame", Vector3(0.0, 0.62, 0.02), Vector3(0.82, 0.28, 0.48), armor)
-	_add_box("LowerTorsoArmor", Vector3(0.0, 0.86, 0.0), Vector3(0.74, 0.46, 0.5), shell)
-	_add_box("UpperChestArmor", Vector3(0.0, 1.16, -0.02), Vector3(0.92, 0.52, 0.48), shell)
+	_add_capsule("PelvisFrame", Vector3(0.0, 0.62, 0.02), 0.25, 0.86, armor, Vector3(0.0, 0.0, 90.0))
+	_add_capsule("LowerTorsoArmor", Vector3(0.0, 0.86, 0.0), 0.34, 0.64, shell)
+	_add_ellipsoid("UpperChestArmor", Vector3(0.0, 1.16, -0.02), Vector3(0.95, 0.6, 0.54), shell)
 	_add_box("ChestDarkInset", Vector3(0.0, 1.15, -0.275), Vector3(0.55, 0.34, 0.04), dark)
 	_add_cylinder("HeartCoreGlass", Vector3(0.0, 1.16, -0.31), 0.18, 0.08, teal, Vector3(90.0, 0.0, 0.0))
 	_add_cylinder("CoreOuterRing", Vector3(0.0, 1.16, -0.322), 0.25, 0.035, trim, Vector3(90.0, 0.0, 0.0))
@@ -226,9 +226,9 @@ func _build_robot() -> void:
 	_add_box("LeftChestPanel", Vector3(-0.32, 1.16, -0.29), Vector3(0.12, 0.24, 0.045), armor)
 	_add_box("RightChestPanel", Vector3(0.32, 1.16, -0.29), Vector3(0.12, 0.24, 0.045), armor)
 
-	_add_box("NeckJoint", Vector3(0.0, 1.47, 0.0), Vector3(0.28, 0.16, 0.26), rubber)
-	_add_box("HeadShell", Vector3(0.0, 1.7, 0.0), Vector3(0.74, 0.44, 0.56), shell)
-	_add_box("HelmetBrow", Vector3(0.0, 1.84, -0.08), Vector3(0.82, 0.12, 0.5), trim)
+	_add_capsule("NeckJoint", Vector3(0.0, 1.47, 0.0), 0.14, 0.2, rubber)
+	_add_ellipsoid("HeadShell", Vector3(0.0, 1.7, 0.0), Vector3(0.76, 0.48, 0.58), shell)
+	_add_capsule("HelmetBrow", Vector3(0.0, 1.84, -0.08), 0.08, 0.8, trim, Vector3(0.0, 0.0, 90.0))
 	_add_box("FacePlate", Vector3(0.0, 1.69, -0.31), Vector3(0.6, 0.22, 0.04), dark)
 	_add_box("VisorGlow", Vector3(0.0, 1.7, -0.34), Vector3(0.46, 0.105, 0.035), teal)
 	_add_box("LeftVisorPixel", Vector3(-0.16, 1.7, -0.365), Vector3(0.065, 0.045, 0.025), soft_white)
@@ -238,35 +238,35 @@ func _build_robot() -> void:
 	_add_cylinder("AntennaStem", Vector3(0.24, 2.02, 0.05), 0.025, 0.32, dark)
 	_add_sphere("AntennaTip", Vector3(0.24, 2.2, 0.05), 0.055, amber)
 
-	_add_box("LeftShoulderBlock", Vector3(-0.65, 1.22, 0.0), Vector3(0.32, 0.28, 0.42), armor)
-	_add_box("RightShoulderBlock", Vector3(0.65, 1.22, 0.0), Vector3(0.32, 0.28, 0.42), armor)
+	_add_capsule("LeftShoulderBlock", Vector3(-0.65, 1.22, 0.0), 0.18, 0.42, armor, Vector3(90.0, 0.0, 0.0))
+	_add_capsule("RightShoulderBlock", Vector3(0.65, 1.22, 0.0), 0.18, 0.42, armor, Vector3(90.0, 0.0, 0.0))
 	_add_sphere("LeftShoulderLamp", Vector3(-0.65, 1.36, -0.23), 0.065, amber)
 	_add_sphere("RightShoulderLamp", Vector3(0.65, 1.36, -0.23), 0.065, amber)
-	_add_cylinder("LeftUpperArmJoint", Vector3(-0.77, 1.0, 0.0), 0.105, 0.28, rubber)
-	_add_cylinder("RightUpperArmJoint", Vector3(0.77, 1.0, 0.0), 0.105, 0.28, rubber)
-	_add_box("LeftForearmArmor", Vector3(-0.82, 0.77, -0.03), Vector3(0.22, 0.46, 0.28), shell)
-	_add_box("RightForearmArmor", Vector3(0.82, 0.77, -0.03), Vector3(0.22, 0.46, 0.28), shell)
-	_add_box("LeftWristClamp", Vector3(-0.82, 0.5, -0.04), Vector3(0.24, 0.12, 0.3), armor)
-	_add_box("RightWristClamp", Vector3(0.82, 0.5, -0.04), Vector3(0.24, 0.12, 0.3), armor)
-	_add_box("LeftHandPincerA", Vector3(-0.9, 0.39, -0.12), Vector3(0.08, 0.16, 0.2), rubber, Vector3(0.0, 0.0, -12.0))
-	_add_box("LeftHandPincerB", Vector3(-0.74, 0.39, -0.12), Vector3(0.08, 0.16, 0.2), rubber, Vector3(0.0, 0.0, 12.0))
+	_add_sphere("LeftUpperArmJoint", Vector3(-0.77, 1.0, 0.0), 0.13, rubber)
+	_add_sphere("RightUpperArmJoint", Vector3(0.77, 1.0, 0.0), 0.13, rubber)
+	_add_capsule("LeftForearmArmor", Vector3(-0.82, 0.77, -0.03), 0.14, 0.52, shell)
+	_add_capsule("RightForearmArmor", Vector3(0.82, 0.77, -0.03), 0.14, 0.52, shell)
+	_add_capsule("LeftWristClamp", Vector3(-0.82, 0.5, -0.04), 0.09, 0.3, armor, Vector3(90.0, 0.0, 0.0))
+	_add_capsule("RightWristClamp", Vector3(0.82, 0.5, -0.04), 0.09, 0.3, armor, Vector3(90.0, 0.0, 0.0))
+	_add_capsule("LeftHandPincerA", Vector3(-0.9, 0.39, -0.12), 0.045, 0.2, rubber, Vector3(18.0, 0.0, -12.0))
+	_add_capsule("LeftHandPincerB", Vector3(-0.74, 0.39, -0.12), 0.045, 0.2, rubber, Vector3(18.0, 0.0, 12.0))
 	_add_cylinder("RightBlasterBarrel", Vector3(0.82, 0.47, -0.32), 0.075, 0.48, dark, Vector3(90.0, 0.0, 0.0))
 	_add_cylinder("RightBlasterMuzzleGlow", Vector3(0.82, 0.47, -0.58), 0.085, 0.035, teal, Vector3(90.0, 0.0, 0.0))
 
-	_add_box("BackpackMain", Vector3(0.0, 1.12, 0.36), Vector3(0.6, 0.78, 0.22), armor)
-	_add_box("BackpackBatteryLeft", Vector3(-0.22, 1.13, 0.5), Vector3(0.16, 0.62, 0.12), dark)
-	_add_box("BackpackBatteryRight", Vector3(0.22, 1.13, 0.5), Vector3(0.16, 0.62, 0.12), dark)
+	_add_capsule("BackpackMain", Vector3(0.0, 1.12, 0.36), 0.22, 0.78, armor)
+	_add_capsule("BackpackBatteryLeft", Vector3(-0.22, 1.13, 0.5), 0.075, 0.62, dark)
+	_add_capsule("BackpackBatteryRight", Vector3(0.22, 1.13, 0.5), 0.075, 0.62, dark)
 	_add_cylinder("BackpackCoolantPipeTop", Vector3(0.0, 1.47, 0.53), 0.035, 0.5, teal, Vector3(0.0, 0.0, 90.0))
 	_add_cylinder("BackpackCoolantPipeBottom", Vector3(0.0, 0.8, 0.53), 0.03, 0.5, teal, Vector3(0.0, 0.0, 90.0))
 
-	_add_cylinder("LeftHipJoint", Vector3(-0.28, 0.52, 0.0), 0.12, 0.22, rubber, Vector3(0.0, 0.0, 90.0))
-	_add_cylinder("RightHipJoint", Vector3(0.28, 0.52, 0.0), 0.12, 0.22, rubber, Vector3(0.0, 0.0, 90.0))
-	_add_box("LeftThighPlate", Vector3(-0.28, 0.31, 0.02), Vector3(0.24, 0.42, 0.28), shell)
-	_add_box("RightThighPlate", Vector3(0.28, 0.31, 0.02), Vector3(0.24, 0.42, 0.28), shell)
-	_add_box("LeftKneePad", Vector3(-0.28, 0.22, -0.18), Vector3(0.26, 0.16, 0.08), armor)
-	_add_box("RightKneePad", Vector3(0.28, 0.22, -0.18), Vector3(0.26, 0.16, 0.08), armor)
-	_add_box("LeftFoot", Vector3(-0.28, 0.06, -0.09), Vector3(0.34, 0.14, 0.52), rubber)
-	_add_box("RightFoot", Vector3(0.28, 0.06, -0.09), Vector3(0.34, 0.14, 0.52), rubber)
+	_add_sphere("LeftHipJoint", Vector3(-0.28, 0.52, 0.0), 0.14, rubber)
+	_add_sphere("RightHipJoint", Vector3(0.28, 0.52, 0.0), 0.14, rubber)
+	_add_capsule("LeftThighPlate", Vector3(-0.28, 0.31, 0.02), 0.14, 0.44, shell)
+	_add_capsule("RightThighPlate", Vector3(0.28, 0.31, 0.02), 0.14, 0.44, shell)
+	_add_capsule("LeftKneePad", Vector3(-0.28, 0.22, -0.18), 0.075, 0.28, armor, Vector3(0.0, 0.0, 90.0))
+	_add_capsule("RightKneePad", Vector3(0.28, 0.22, -0.18), 0.075, 0.28, armor, Vector3(0.0, 0.0, 90.0))
+	_add_capsule("LeftFoot", Vector3(-0.28, 0.06, -0.09), 0.12, 0.52, rubber, Vector3(90.0, 0.0, 0.0))
+	_add_capsule("RightFoot", Vector3(0.28, 0.06, -0.09), 0.12, 0.52, rubber, Vector3(90.0, 0.0, 0.0))
 	_add_box("LeftToeLight", Vector3(-0.28, 0.11, -0.37), Vector3(0.18, 0.04, 0.035), amber)
 	_add_box("RightToeLight", Vector3(0.28, 0.11, -0.37), Vector3(0.18, 0.04, 0.035), amber)
 
@@ -314,6 +314,39 @@ func _add_sphere(node_name: String, position: Vector3, radius: float, material: 
 	mesh.mesh = sphere
 	mesh.name = node_name
 	mesh.position = position
+	mesh.material_override = material
+	_model_root.add_child(mesh)
+	return mesh
+
+
+func _add_ellipsoid(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	sphere.radial_segments = 32
+	sphere.rings = 16
+	mesh.mesh = sphere
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.scale = size
+	mesh.material_override = material
+	_model_root.add_child(mesh)
+	return mesh
+
+
+func _add_capsule(node_name: String, position: Vector3, radius: float, height: float, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = radius
+	capsule.height = height
+	capsule.radial_segments = 24
+	capsule.rings = 12
+	mesh.mesh = capsule
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
 	mesh.material_override = material
 	_model_root.add_child(mesh)
 	return mesh

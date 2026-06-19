@@ -155,11 +155,11 @@ func _build_child() -> void:
 	_model_root.name = "ChildModel"
 	add_child(_model_root)
 
-	_add_box("OversizedJacketBody", Vector3(0.0, 0.72, 0.0), Vector3(0.56, 0.62, 0.38), _jacket_material)
-	_add_box("JacketLowerHem", Vector3(0.0, 0.43, -0.01), Vector3(0.62, 0.12, 0.42), hoodie_shadow)
-	_add_box("HoodBack", Vector3(0.0, 1.04, 0.16), Vector3(0.48, 0.28, 0.18), hoodie_shadow)
-	_add_box("LeftSleeve", Vector3(-0.37, 0.74, -0.02), Vector3(0.18, 0.48, 0.22), _jacket_material, Vector3(0.0, 0.0, 6.0))
-	_add_box("RightSleeve", Vector3(0.37, 0.74, -0.02), Vector3(0.18, 0.48, 0.22), _jacket_material, Vector3(0.0, 0.0, -6.0))
+	_add_ellipsoid("OversizedJacketBody", Vector3(0.0, 0.72, 0.0), Vector3(0.58, 0.7, 0.42), _jacket_material)
+	_add_capsule("JacketLowerHem", Vector3(0.0, 0.43, -0.01), 0.08, 0.64, hoodie_shadow, Vector3(0.0, 0.0, 90.0))
+	_add_ellipsoid("HoodBack", Vector3(0.0, 1.04, 0.16), Vector3(0.5, 0.32, 0.22), hoodie_shadow)
+	_add_capsule("LeftSleeve", Vector3(-0.37, 0.74, -0.02), 0.1, 0.5, _jacket_material, Vector3(0.0, 0.0, 6.0))
+	_add_capsule("RightSleeve", Vector3(0.37, 0.74, -0.02), 0.1, 0.5, _jacket_material, Vector3(0.0, 0.0, -6.0))
 	_add_sphere("LeftHand", Vector3(-0.43, 0.48, -0.08), 0.075, skin_mat)
 	_add_sphere("RightHand", Vector3(0.43, 0.48, -0.08), 0.075, skin_mat)
 	_add_box("ZipperStrip", Vector3(0.0, 0.74, -0.205), Vector3(0.035, 0.5, 0.025), strap_mat)
@@ -173,24 +173,24 @@ func _build_child() -> void:
 	_add_box("RightEye", Vector3(0.065, 1.2, -0.23), Vector3(0.035, 0.035, 0.02), strap_mat)
 	_add_box("TinyMouth", Vector3(0.0, 1.095, -0.235), Vector3(0.085, 0.018, 0.018), strap_mat)
 
-	_add_box("HairCap", Vector3(0.0, 1.34, -0.02), Vector3(0.43, 0.18, 0.36), hair_mat)
-	_add_box("MessyBangA", Vector3(-0.12, 1.27, -0.205), Vector3(0.1, 0.19, 0.05), hair_mat, Vector3(0.0, 0.0, -12.0))
-	_add_box("MessyBangB", Vector3(0.03, 1.27, -0.22), Vector3(0.1, 0.21, 0.05), hair_mat, Vector3(0.0, 0.0, 9.0))
-	_add_box("MessyBangC", Vector3(0.17, 1.25, -0.195), Vector3(0.08, 0.16, 0.05), hair_mat, Vector3(0.0, 0.0, 18.0))
-	_add_box("LeftSideHair", Vector3(-0.24, 1.18, 0.0), Vector3(0.08, 0.26, 0.22), hair_mat)
-	_add_box("RightSideHair", Vector3(0.24, 1.18, 0.0), Vector3(0.08, 0.24, 0.22), hair_mat)
+	_add_ellipsoid("HairCap", Vector3(0.0, 1.34, -0.02), Vector3(0.46, 0.2, 0.38), hair_mat)
+	_add_capsule("MessyBangA", Vector3(-0.12, 1.27, -0.205), 0.045, 0.22, hair_mat, Vector3(0.0, 0.0, -12.0))
+	_add_capsule("MessyBangB", Vector3(0.03, 1.27, -0.22), 0.048, 0.24, hair_mat, Vector3(0.0, 0.0, 9.0))
+	_add_capsule("MessyBangC", Vector3(0.17, 1.25, -0.195), 0.04, 0.18, hair_mat, Vector3(0.0, 0.0, 18.0))
+	_add_capsule("LeftSideHair", Vector3(-0.24, 1.18, 0.0), 0.055, 0.28, hair_mat)
+	_add_capsule("RightSideHair", Vector3(0.24, 1.18, 0.0), 0.055, 0.26, hair_mat)
 
-	_add_box("LeftShortsLeg", Vector3(-0.13, 0.33, -0.01), Vector3(0.18, 0.24, 0.22), pants_mat)
-	_add_box("RightShortsLeg", Vector3(0.13, 0.33, -0.01), Vector3(0.18, 0.24, 0.22), pants_mat)
-	_add_box("LeftSock", Vector3(-0.13, 0.19, -0.01), Vector3(0.115, 0.16, 0.13), skin_mat)
-	_add_box("RightSock", Vector3(0.13, 0.19, -0.01), Vector3(0.115, 0.16, 0.13), skin_mat)
-	_add_box("LeftBoot", Vector3(-0.14, 0.08, -0.025), Vector3(0.17, 0.16, 0.24), boot_mat)
-	_add_box("RightBoot", Vector3(0.14, 0.08, -0.025), Vector3(0.17, 0.16, 0.24), boot_mat)
-	_add_box("LeftBootToe", Vector3(-0.14, 0.08, -0.16), Vector3(0.19, 0.11, 0.12), boot_mat)
-	_add_box("RightBootToe", Vector3(0.14, 0.08, -0.16), Vector3(0.19, 0.11, 0.12), boot_mat)
+	_add_capsule("LeftShortsLeg", Vector3(-0.13, 0.33, -0.01), 0.095, 0.26, pants_mat)
+	_add_capsule("RightShortsLeg", Vector3(0.13, 0.33, -0.01), 0.095, 0.26, pants_mat)
+	_add_capsule("LeftSock", Vector3(-0.13, 0.19, -0.01), 0.06, 0.18, skin_mat)
+	_add_capsule("RightSock", Vector3(0.13, 0.19, -0.01), 0.06, 0.18, skin_mat)
+	_add_capsule("LeftBoot", Vector3(-0.14, 0.08, -0.025), 0.085, 0.22, boot_mat)
+	_add_capsule("RightBoot", Vector3(0.14, 0.08, -0.025), 0.085, 0.22, boot_mat)
+	_add_capsule("LeftBootToe", Vector3(-0.14, 0.08, -0.16), 0.06, 0.2, boot_mat, Vector3(90.0, 0.0, 0.0))
+	_add_capsule("RightBootToe", Vector3(0.14, 0.08, -0.16), 0.06, 0.2, boot_mat, Vector3(90.0, 0.0, 0.0))
 
-	_add_box("Backpack", Vector3(0.0, 0.73, 0.27), Vector3(0.42, 0.5, 0.18), pack_mat)
-	_add_box("BackpackTopRoll", Vector3(0.0, 1.01, 0.28), Vector3(0.45, 0.1, 0.2), hoodie_shadow)
+	_add_ellipsoid("Backpack", Vector3(0.0, 0.73, 0.27), Vector3(0.44, 0.52, 0.22), pack_mat)
+	_add_capsule("BackpackTopRoll", Vector3(0.0, 1.01, 0.28), 0.065, 0.45, hoodie_shadow, Vector3(0.0, 0.0, 90.0))
 	_add_box("LeftBackpackStrap", Vector3(-0.18, 0.76, -0.215), Vector3(0.07, 0.52, 0.025), strap_mat)
 	_add_box("RightBackpackStrap", Vector3(0.18, 0.76, -0.215), Vector3(0.07, 0.52, 0.025), strap_mat)
 	_add_box("KeepSafeTag", Vector3(-0.28, 0.54, -0.21), Vector3(0.055, 0.095, 0.02), patch_red)
@@ -232,6 +232,39 @@ func _add_sphere(node_name: String, position: Vector3, radius: float, material: 
 	mesh.mesh = sphere
 	mesh.name = node_name
 	mesh.position = position
+	mesh.material_override = material
+	_model_root.add_child(mesh)
+	return mesh
+
+
+func _add_ellipsoid(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	sphere.radial_segments = 24
+	sphere.rings = 12
+	mesh.mesh = sphere
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.scale = size
+	mesh.material_override = material
+	_model_root.add_child(mesh)
+	return mesh
+
+
+func _add_capsule(node_name: String, position: Vector3, radius: float, height: float, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = radius
+	capsule.height = height
+	capsule.radial_segments = 18
+	capsule.rings = 8
+	mesh.mesh = capsule
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
 	mesh.material_override = material
 	_model_root.add_child(mesh)
 	return mesh

@@ -127,6 +127,7 @@ func _make_world() -> void:
 	_add_deck_detail()
 	_add_wall_detail()
 	_add_zone_setpieces()
+	_add_curved_scene_skin()
 
 	for x in [-13.0, -7.0, -1.0, 5.0, 11.0]:
 		_add_light_strip(Vector3(x, 0.08, -9.4), mat_warning)
@@ -273,6 +274,44 @@ func _add_zone_setpieces() -> void:
 	_add_robot_bay_set()
 	_add_alien_nest_set()
 	_add_residential_set()
+
+
+func _add_curved_scene_skin() -> void:
+	for x_i in range(-14, 15, 4):
+		var x: float = float(x_i)
+		_add_capsule_prop("NorthRoundedRib", Vector3(x, 1.35, -10.23), 0.12, 2.25, mat_trim)
+		_add_capsule_prop("SouthRoundedRib", Vector3(x, 1.35, 10.23), 0.12, 2.25, mat_trim)
+		_add_capsule_prop("NorthTopRail", Vector3(x, 2.25, -10.05), 0.065, 3.2, mat_light_blue, Vector3(0.0, 0.0, 90.0))
+		_add_capsule_prop("SouthTopRail", Vector3(x, 2.25, 10.05), 0.065, 3.2, mat_warning, Vector3(0.0, 0.0, 90.0))
+
+	for z_i in range(-8, 9, 4):
+		var z: float = float(z_i)
+		_add_capsule_prop("WestRoundedRib", Vector3(-15.23, 1.35, z), 0.12, 2.25, mat_trim)
+		_add_capsule_prop("EastRoundedRib", Vector3(15.23, 1.35, z), 0.12, 2.25, mat_trim)
+		_add_capsule_prop("WestTopRail", Vector3(-15.05, 2.25, z), 0.065, 3.2, mat_light_blue, Vector3(90.0, 0.0, 0.0))
+		_add_capsule_prop("EastTopRail", Vector3(15.05, 2.25, z), 0.065, 3.2, mat_warning, Vector3(90.0, 0.0, 0.0))
+
+	for position in [Vector3(-5.0, 1.25, -1.0), Vector3(4.0, 1.25, 0.0), Vector3(8.2, 1.25, -4.7)]:
+		_add_round_bulkhead_frame(position)
+
+	for position in [Vector3(-12.0, 0.22, 6.5), Vector3(-6.8, 0.2, 5.8), Vector3(0.0, 0.2, 0.0), Vector3(6.4, 0.2, -2.8), Vector3(12.0, 0.2, -6.5)]:
+		_add_cylinder_prop("OvalDeckPlate", position, 1.35, 0.045, mat_panel)
+		_add_cylinder_prop("OvalDeckTrim", position + Vector3(0.0, 0.035, 0.0), 1.48, 0.025, mat_trim)
+
+	_add_ellipsoid_prop("ObservationBubbleA", Vector3(-14.8, 1.42, -6.2), Vector3(0.12, 0.82, 1.6), mat_glass)
+	_add_ellipsoid_prop("ObservationBubbleB", Vector3(14.8, 1.42, -6.2), Vector3(0.12, 0.82, 1.6), mat_glass)
+	_add_capsule_prop("HangingCableA", Vector3(-3.4, 1.35, -9.2), 0.035, 2.5, mat_cable, Vector3(36.0, 0.0, 90.0))
+	_add_capsule_prop("HangingCableB", Vector3(-1.9, 1.2, -9.15), 0.03, 1.8, mat_cable, Vector3(-24.0, 0.0, 90.0))
+	_add_capsule_prop("HangingCableC", Vector3(13.1, 1.1, -1.5), 0.03, 1.6, mat_cable, Vector3(58.0, 0.0, 20.0))
+
+
+func _add_round_bulkhead_frame(position: Vector3) -> void:
+	_add_capsule_prop("BulkheadLeftRoundedColumn", position + Vector3(-0.75, 0.0, 0.0), 0.11, 2.1, mat_trim)
+	_add_capsule_prop("BulkheadRightRoundedColumn", position + Vector3(0.75, 0.0, 0.0), 0.11, 2.1, mat_trim)
+	_add_capsule_prop("BulkheadTopRoundedArc", position + Vector3(0.0, 0.95, 0.0), 0.11, 1.5, mat_trim, Vector3(0.0, 0.0, 90.0))
+	_add_capsule_prop("BulkheadLowerRail", position + Vector3(0.0, -0.72, 0.0), 0.075, 1.35, mat_wall_dark, Vector3(0.0, 0.0, 90.0))
+	_add_sphere_prop("BulkheadLeftLamp", position + Vector3(-0.92, 0.72, -0.1), 0.075, mat_warning)
+	_add_sphere_prop("BulkheadRightLamp", position + Vector3(0.92, 0.72, -0.1), 0.075, mat_light_blue)
 
 
 func _add_medbay_set() -> void:
@@ -464,6 +503,39 @@ func _add_prop_box(position: Vector3, size: Vector3, material: Material, rotatio
 func _add_box(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
 	var mesh := _add_prop_box(position, size, material, rotation)
 	mesh.name = node_name
+	return mesh
+
+
+func _add_ellipsoid_prop(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	sphere.radial_segments = 32
+	sphere.rings = 16
+	mesh.mesh = sphere
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.scale = size
+	mesh.material_override = material
+	add_child(mesh)
+	return mesh
+
+
+func _add_capsule_prop(node_name: String, position: Vector3, radius: float, height: float, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = radius
+	capsule.height = height
+	capsule.radial_segments = 24
+	capsule.rings = 12
+	mesh.mesh = capsule
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.material_override = material
+	add_child(mesh)
 	return mesh
 
 

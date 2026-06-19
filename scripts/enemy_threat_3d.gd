@@ -106,11 +106,11 @@ func _animate_threat(delta: float, move_amount: float) -> void:
 		_model_root.position.y = bob * 0.05
 		_model_root.rotation_degrees = Vector3(attack * -8.0, 0.0, step * 4.0 * move_amount)
 		if is_instance_valid(_left_claw):
-			_left_claw.rotation_degrees = Vector3(-attack * 28.0, 0.0, -18.0 + step * 16.0 * move_amount)
+			_left_claw.rotation_degrees = Vector3(72.0 - attack * 28.0, 0.0, -18.0 + step * 16.0 * move_amount)
 		if is_instance_valid(_right_claw):
-			_right_claw.rotation_degrees = Vector3(-attack * 28.0, 0.0, 18.0 - step * 16.0 * move_amount)
+			_right_claw.rotation_degrees = Vector3(72.0 - attack * 28.0, 0.0, 18.0 - step * 16.0 * move_amount)
 		if is_instance_valid(_tail):
-			_tail.rotation_degrees = Vector3(0.0, step * 10.0 * move_amount, 0.0)
+			_tail.rotation_degrees = Vector3(90.0, step * 10.0 * move_amount, 0.0)
 		if is_instance_valid(_left_eye):
 			_left_eye.scale = Vector3.ONE * (1.0 + attack * 0.45 + hit * 0.25)
 		if is_instance_valid(_right_eye):
@@ -166,17 +166,17 @@ func _build_visual() -> void:
 		speed = 3.8
 		max_hp = 2
 		_add_sphere("DroneCore", Vector3(0.0, 0.92, 0.0), 0.33, steel)
-		_add_box("DroneRedArmorTop", Vector3(0.0, 1.08, -0.03), Vector3(0.52, 0.13, 0.38), _body_material)
+		_add_ellipsoid("DroneRedArmorTop", Vector3(0.0, 1.08, -0.03), Vector3(0.58, 0.18, 0.42), _body_material)
 		_add_box("DroneSensorFace", Vector3(0.0, 0.94, -0.34), Vector3(0.32, 0.12, 0.035), warning)
-		_add_box("DroneWingL", Vector3(-0.56, 0.94, 0.0), Vector3(0.58, 0.1, 0.2), dark)
-		_add_box("DroneWingR", Vector3(0.56, 0.94, 0.0), Vector3(0.58, 0.1, 0.2), dark)
+		_add_capsule("DroneWingL", Vector3(-0.56, 0.94, 0.0), 0.08, 0.58, dark, Vector3(0.0, 0.0, 90.0))
+		_add_capsule("DroneWingR", Vector3(0.56, 0.94, 0.0), 0.08, 0.58, dark, Vector3(0.0, 0.0, 90.0))
 		_add_cylinder("LeftRotor", Vector3(-0.88, 0.98, 0.0), 0.24, 0.035, warning)
 		_add_cylinder("RightRotor", Vector3(0.88, 0.98, 0.0), 0.24, 0.035, warning)
 		_add_box("LeftRotorBladeA", Vector3(-0.88, 1.0, 0.0), Vector3(0.48, 0.025, 0.055), dark)
 		_add_box("LeftRotorBladeB", Vector3(-0.88, 1.0, 0.0), Vector3(0.055, 0.025, 0.48), dark)
 		_add_box("RightRotorBladeA", Vector3(0.88, 1.0, 0.0), Vector3(0.48, 0.025, 0.055), dark)
 		_add_box("RightRotorBladeB", Vector3(0.88, 1.0, 0.0), Vector3(0.055, 0.025, 0.48), dark)
-		_add_box("DroneStinger", Vector3(0.0, 0.75, -0.46), Vector3(0.12, 0.1, 0.36), dark)
+		_add_capsule("DroneStinger", Vector3(0.0, 0.75, -0.46), 0.055, 0.36, dark, Vector3(90.0, 0.0, 0.0))
 	else:
 		speed = 2.8
 		max_hp = 3
@@ -185,18 +185,18 @@ func _build_visual() -> void:
 		_add_box("AlienMaw", Vector3(0.0, 0.82, -0.38), Vector3(0.38, 0.16, 0.18), dark)
 		_add_sphere("LeftAlienEye", Vector3(-0.11, 0.98, -0.36), 0.045, acid)
 		_add_sphere("RightAlienEye", Vector3(0.11, 0.98, -0.36), 0.045, acid)
-		_add_box("AlienRibBody", Vector3(0.0, 0.45, 0.02), Vector3(0.62, 0.52, 0.48), _body_material)
+		_add_ellipsoid("AlienRibBody", Vector3(0.0, 0.45, 0.02), Vector3(0.7, 0.55, 0.54), _body_material)
 		_add_box("AlienBellyGlow", Vector3(0.0, 0.46, -0.26), Vector3(0.32, 0.28, 0.035), acid)
-		_add_box("SpinePlateA", Vector3(0.0, 0.68, 0.32), Vector3(0.22, 0.08, 0.16), dark)
-		_add_box("SpinePlateB", Vector3(0.0, 0.48, 0.34), Vector3(0.26, 0.08, 0.16), dark)
-		_add_box("SpinePlateC", Vector3(0.0, 0.28, 0.31), Vector3(0.18, 0.08, 0.14), dark)
-		_add_box("LeftClawUpper", Vector3(-0.42, 0.52, -0.18), Vector3(0.16, 0.16, 0.42), dark, Vector3(0.0, 0.0, -18.0))
-		_add_box("RightClawUpper", Vector3(0.42, 0.52, -0.18), Vector3(0.16, 0.16, 0.42), dark, Vector3(0.0, 0.0, 18.0))
-		_add_box("LeftClawTip", Vector3(-0.5, 0.44, -0.45), Vector3(0.12, 0.11, 0.24), acid, Vector3(-20.0, 0.0, -18.0))
-		_add_box("RightClawTip", Vector3(0.5, 0.44, -0.45), Vector3(0.12, 0.11, 0.24), acid, Vector3(-20.0, 0.0, 18.0))
-		_add_box("LeftHindLeg", Vector3(-0.28, 0.13, 0.18), Vector3(0.14, 0.26, 0.38), dark, Vector3(0.0, 0.0, -12.0))
-		_add_box("RightHindLeg", Vector3(0.28, 0.13, 0.18), Vector3(0.14, 0.26, 0.38), dark, Vector3(0.0, 0.0, 12.0))
-		_add_box("TailStub", Vector3(0.0, 0.3, 0.48), Vector3(0.18, 0.16, 0.46), dark)
+		_add_capsule("SpinePlateA", Vector3(0.0, 0.68, 0.32), 0.055, 0.24, dark, Vector3(90.0, 0.0, 90.0))
+		_add_capsule("SpinePlateB", Vector3(0.0, 0.48, 0.34), 0.06, 0.28, dark, Vector3(90.0, 0.0, 90.0))
+		_add_capsule("SpinePlateC", Vector3(0.0, 0.28, 0.31), 0.05, 0.2, dark, Vector3(90.0, 0.0, 90.0))
+		_add_capsule("LeftClawUpper", Vector3(-0.42, 0.52, -0.18), 0.075, 0.46, dark, Vector3(72.0, 0.0, -18.0))
+		_add_capsule("RightClawUpper", Vector3(0.42, 0.52, -0.18), 0.075, 0.46, dark, Vector3(72.0, 0.0, 18.0))
+		_add_capsule("LeftClawTip", Vector3(-0.5, 0.44, -0.45), 0.055, 0.26, acid, Vector3(70.0, 0.0, -18.0))
+		_add_capsule("RightClawTip", Vector3(0.5, 0.44, -0.45), 0.055, 0.26, acid, Vector3(70.0, 0.0, 18.0))
+		_add_capsule("LeftHindLeg", Vector3(-0.28, 0.13, 0.18), 0.07, 0.4, dark, Vector3(18.0, 0.0, -12.0))
+		_add_capsule("RightHindLeg", Vector3(0.28, 0.13, 0.18), 0.07, 0.4, dark, Vector3(18.0, 0.0, 12.0))
+		_add_capsule("TailStub", Vector3(0.0, 0.3, 0.48), 0.08, 0.52, dark, Vector3(90.0, 0.0, 0.0))
 
 	_cache_animation_parts()
 
@@ -237,6 +237,39 @@ func _add_sphere(node_name: String, position: Vector3, radius: float, material: 
 	mesh.position = position
 	mesh.material_override = material
 	_model_root.add_child(mesh)
+
+
+func _add_ellipsoid(node_name: String, position: Vector3, size: Vector3, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	sphere.radial_segments = 24
+	sphere.rings = 12
+	mesh.mesh = sphere
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.scale = size
+	mesh.material_override = material
+	_model_root.add_child(mesh)
+	return mesh
+
+
+func _add_capsule(node_name: String, position: Vector3, radius: float, height: float, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = radius
+	capsule.height = height
+	capsule.radial_segments = 18
+	capsule.rings = 8
+	mesh.mesh = capsule
+	mesh.name = node_name
+	mesh.position = position
+	mesh.rotation_degrees = rotation
+	mesh.material_override = material
+	_model_root.add_child(mesh)
+	return mesh
 
 
 func _add_cylinder(node_name: String, position: Vector3, radius: float, height: float, material: Material, rotation: Vector3 = Vector3.ZERO) -> MeshInstance3D:
